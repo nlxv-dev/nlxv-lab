@@ -186,7 +186,10 @@ body {
 }
 
 /* ---------- ГЛАВНЫЙ СПИСОК ---------- */
-.list-wrap {
+/* display: flex задаём только когда блок показан (.is-shown),
+   иначе он перебивает display: none у .view и занимает место
+   невидимым — из-за этого остальной контент "съезжал" вниз. */
+.list-wrap.is-shown {
     display: flex;
     flex-direction: column;
 }
