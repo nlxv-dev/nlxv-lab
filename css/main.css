@@ -37,6 +37,11 @@ html, body {
     -webkit-text-size-adjust: 100%;
 }
 
+/* ---------- КАРКАС СТРАНИЦЫ (STICKY FOOTER) ----------
+   Контент всегда сверху. Футер прижат к низу только если места
+   больше, чем контента. Никаких "провалов" при малом количестве
+   элементов в списке.
+   ------------------------------------------------------------ */
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
@@ -45,7 +50,6 @@ body {
     -webkit-font-smoothing: antialiased;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     min-height: 100vh;
     overflow-x: hidden;
     transition: background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
@@ -138,11 +142,15 @@ body {
     flex-shrink: 0;
 }
 
-/* ---------- HERO ---------- */
+/* ---------- ОСНОВНОЙ КОНТЕНТ ----------
+   flex-grow: 1 заставляет main занимать всё свободное место
+   между шапкой и футером, но при этом САМ КОНТЕНТ внутри
+   остаётся сверху — без justify-content: space-between.
+   ------------------------------------------------------------ */
 .main-content {
     width: 100%;
     flex-grow: 1;
-    padding-top: max(3rem, 5vh);
+    padding-top: max(5rem, 8vh);
     padding-bottom: max(3rem, 5vh);
 }
 
@@ -231,7 +239,7 @@ body {
     .item-desc { margin-top: 0; text-align: right; }
 }
 
-/* ---------- ОБЩАЯ ШАПКА ДЛЯ КАТАЛОГОВ (Projects / Process / Article) ---------- */
+/* ---------- ОБЩАЯ ШАПКА ДЛЯ КАТАЛОГОВ ---------- */
 .catalog-header {
     display: flex;
     justify-content: space-between;
@@ -283,7 +291,7 @@ body {
     flex-direction: column;
 }
 
-/* ---------- КАРТОЧКА ПРОЕКТА (Projects / Process) ---------- */
+/* ---------- КАРТОЧКА ПРОЕКТА / ЗАПИСИ ДЕВЛОГА ---------- */
 .project-card {
     display: grid;
     grid-template-columns: 3rem 1fr auto;
@@ -376,17 +384,7 @@ a.project-card { cursor: pointer; }
     .project-link { justify-self: start; }
 }
 
-/* ---------- ПУСТОЕ СОСТОЯНИЕ ЛЕНТЫ ДЕВЛОГОВ ---------- */
-.process-empty {
-    padding: 4rem 0;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    letter-spacing: 0.02em;
-    border-bottom: 1px solid var(--border-color);
-}
-
-/* ---------- СТАТЬЯ ДЕВЛОГА (премиальная книжная вёрстка) ---------- */
+/* ---------- СТАТЬЯ ДЕВЛОГА (книжная вёрстка) ---------- */
 .article-wrap { padding-bottom: 2rem; }
 
 .article-hero {
@@ -516,7 +514,12 @@ a.project-card { cursor: pointer; }
 }
 
 /* ---------- ФУТЕР ---------- */
-.footer { padding: 3rem 0; }
+.footer {
+    padding: 3rem 0;
+    /* Не растягивается — идёт сразу после main-content.
+       Если контента мало, main-content занимает всё свободное
+       место благодаря flex-grow: 1 и прижимает футер к низу. */
+}
 
 .stealth-wrap {
     display: flex;
