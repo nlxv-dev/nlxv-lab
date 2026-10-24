@@ -1,467 +1,331 @@
 /* ============================================================
    NLXV — APPLICATION LOGIC
+   Структура файла:
+     1. Данные (направления, проекты, переводы)  ← сюда добавлять новое
+     2. Утилиты
+     3. Тема и язык
+     4. Роутер (#hash) и менеджер видов
+     5. Рендеры
+     6. Инициализация
    ============================================================ */
 
-const CONFIG = {
-    entriesPath: 'entries/',
-    manifestFile: 'entries/manifest.json'
-};
+'use strict';
 
-/* ------------------------------------------------------------
-   I18N
-   ------------------------------------------------------------ */
-const content = {
+/* ============================================================
+   1. ДАННЫЕ
+   ============================================================ */
+
+/** Направления на главной. `view` — на какой экран ведёт строка (null = пока ни на какой). */
+const DIRECTIONS = [
+    {
+        title: 'NLXV / Projects',
+        view: 'projects',
+        desc: {
+            en: 'digital products, web systems, and software tools.',
+            ru: 'цифровые продукты, веб-системы и программные инструменты.'
+        }
+    },
+    {
+        title: 'NLXV / Concepts',
+        view: null,
+        desc: {
+            en: 'AI research, generative graphics, and visual experiments.',
+            ru: 'ИИ-исследования, генеративная графика и визуальные эксперименты.'
+        }
+    },
+    {
+        title: 'NLXV / Vision',
+        view: null,
+        desc: {
+            en: 'conceptual video, sound design, and media art.',
+            ru: 'концептуальное видео, саунд-дизайн и медиа-арт.'
+        }
+    },
+    {
+        // Раздел временно отключён: пункт остаётся в меню, но никуда не ведёт.
+        // Чтобы включить — задай `view` и добавь соответствующий экран.
+        title: 'NLXV / Process',
+        view: null,
+        later: true,
+        desc: {
+            en: 'unfolding in due time.',
+            ru: 'всё в своё время.'
+        }
+    }
+];
+
+/** Проекты в каталоге NLXV / Projects. */
+const PROJECTS = [
+    {
+        title: 'Neo Finance',
+        url: 'https://nlxv-dev.github.io/neo-finance/',
+        stack: ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'HTML Canvas API', 'Web Platform APIs', 'PWA']
+    },
+    {
+        title: 'EcoPrint Norway',
+        url: 'https://nlxv-dev.github.io/ecoprint.norway/',
+        stack: ['HTML', 'Tailwind CSS (CDN)', 'Custom CSS', 'Vanilla JS', 'Google Fonts']
+    }
+];
+
+/** Интерфейсные строки. */
+const I18N = {
     en: {
         stealth: 'NLXV / Research — [Stealth Mode] / Internal ecosystem & closed R&D prototypes.',
         back: 'Back',
         catalogTitle: 'Selected Works',
-        devlogTitle: 'Dev Log',
         visit: 'Visit',
-        read: 'Read',
-        projects: [
-            { title: 'NLXV / Projects', desc: 'digital products, web systems, and software tools.' },
-            { title: 'NLXV / Concepts', desc: 'AI research, generative graphics, and visual experiments.' },
-            { title: 'NLXV / Vision', desc: 'conceptual video, sound design, and media art.' },
-            { title: 'NLXV / Process', desc: 'engineering backstage, technical solutions analysis, and error architecture.' }
-        ]
+        later: 'Later',
+        index: 'Index'
     },
     ru: {
         stealth: 'NLXV / Research — [Stealth Mode] / Внутренняя экосистема и закрытые R&D-прототипы.',
         back: 'Назад',
         catalogTitle: 'Selected Works',
-        devlogTitle: 'Dev Log',
         visit: 'Открыть',
-        read: 'Читать',
-        projects: [
-            { title: 'NLXV / Projects', desc: 'цифровые продукты, веб-системы и программные инструменты.' },
-            { title: 'NLXV / Concepts', desc: 'ИИ-исследования, генеративная графика и визуальные эксперименты.' },
-            { title: 'NLXV / Vision', desc: 'концептуальное видео, саунд-дизайн и медиа-арт.' },
-            { title: 'NLXV / Process', desc: 'инженерный бэкстейдж, разбор технических решений и архитектура ошибок.' }
-        ]
+        later: 'Позже',
+        index: 'Индекс'
     }
 };
 
-/* ------------------------------------------------------------
-   СТАТИЧЕСКИЕ ДАННЫЕ
-   ------------------------------------------------------------ */
-const staticHeroEnglish = 'NLXV — <span class="font-serif-italic">Independent</span> Digital Laboratory.';
+const VIEWS = ['main', 'projects'];
+const VIEW_SWAP_MS = 400;
 
-const subProjects = [
-    {
-        num: '01',
-        title: 'Neo Finance',
-        tech: 'React + TypeScript · Vite · Tailwind CSS · HTML Canvas API · Web Platform APIs · PWA',
-        url: '#'
-    },
-    {
-        num: '02',
-        title: 'EcoPrint Norway',
-        tech: 'HTML · Tailwind CSS (CDN) · custom CSS · Vanilla JS · Google Fonts',
-        url: 'https://github.io'
-    }
-];
-
-/* ------------------------------------------------------------
-   СОСТОЯНИЕ
-   ------------------------------------------------------------ */
-let currentLang = 'en';
-let currentTheme = 'dark';
-let currentView = null;
-let processEntries = [];
-let activeEntry = null;
-
-/* ------------------------------------------------------------
-   DOM
-   ------------------------------------------------------------ */
-const bodyElem        = document.getElementById('bodyRoot');
-const langToggle      = document.getElementById('langToggle');
-const themeToggle     = document.getElementById('themeToggle');
-const themeIconMoon   = document.getElementById('themeIconMoon');
-const themeIconSun    = document.getElementById('themeIconSun');
-const labList         = document.getElementById('labList');
-const projectsCatalog = document.getElementById('projectsCatalog');
-const processWrap     = document.getElementById('processWrap');
-const processList     = document.getElementById('processList');
-const processCounter  = document.getElementById('processCounter');
-const articleWrap     = document.getElementById('articleWrap');
-const articleHero     = document.getElementById('articleHero');
-const articleContent  = document.getElementById('articleContent');
+const ARROW_UP_RIGHT =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>';
+const ARROW_LEFT =
+    '<svg class="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
 
 /* ============================================================
-   МЕНЕДЖЕР ВИДОВ
+   2. УТИЛИТЫ
    ============================================================ */
-const ALL_VIEWS = ['main', 'projects', 'process', 'article'];
 
-function getViewEl(name) {
-    return document.querySelector(`[data-view="${name}"]`);
+const $ = (id) => document.getElementById(id);
+
+const pad2 = (n) => String(n).padStart(2, '0');
+
+const escapeHtml = (str) =>
+    String(str).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+
+/** localStorage может быть недоступен (приватный режим и т.п.) — не падаем. */
+const storage = {
+    get(key) {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+    },
+    set(key, value) {
+        try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+    }
+};
+
+/**
+ * «Катящийся» текст (приём с visuvate.com): каждая буква — окошко с двумя копиями,
+ * при hover родителя с классом .js-roll буквы по очереди прокручиваются вверх.
+ * `hoverText` — что показать после прокрутки (по умолчанию тот же текст).
+ */
+function roll(text, hoverText = text) {
+    const a = Array.from(text);
+    const b = Array.from(hoverText);
+    const len = Math.max(a.length, b.length);
+    let chars = '';
+
+    for (let i = 0; i < len; i++) {
+        const from = a[i] === ' ' || a[i] === undefined ? ' ' : escapeHtml(a[i]);
+        const to   = b[i] === ' ' || b[i] === undefined ? ' ' : escapeHtml(b[i]);
+        chars += `<span class="roll-char" style="--i:${i}"><span>${from}</span><span>${to}</span></span>`;
+    }
+    return `<span class="roll" aria-hidden="true">${chars}</span><span class="sr-only">${escapeHtml(text)}</span>`;
 }
 
-function switchView(toName, instant = false) {
+/* ============================================================
+   3. ТЕМА И ЯЗЫК
+   ============================================================ */
+
+const root        = document.documentElement;
+const langToggle  = $('langToggle');
+const themeToggle = $('themeToggle');
+const metaTheme   = $('metaThemeColor');
+
+let currentLang = 'en';
+
+const THEME_COLORS = { light: '#fcfbfa', dark: '#070708' };
+
+function getTheme() {
+    return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    if (metaTheme) metaTheme.setAttribute('content', THEME_COLORS[theme]);
+    themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
+}
+
+themeToggle.addEventListener('click', () => {
+    const next = getTheme() === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    storage.set('nlxv-theme', next);
+});
+
+function renderLangButton() {
+    const other = currentLang === 'en' ? 'ru' : 'en';
+    langToggle.innerHTML = roll(currentLang.toUpperCase(), other.toUpperCase());
+}
+
+langToggle.addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'ru' : 'en';
+    document.documentElement.lang = currentLang;
+    renderLangButton();
+    renderContent({ animate: false });
+});
+
+/* ============================================================
+   4. РОУТЕР (#hash) И МЕНЕДЖЕР ВИДОВ
+   Ссылки — обычные <a href="#projects">, поэтому кнопка «Назад»
+   в браузере работает сама, а к экрану можно дать прямую ссылку.
+   ============================================================ */
+
+let currentView = null;
+let swapTimer = null;
+
+const getViewEl = (name) => document.querySelector(`[data-view="${name}"]`);
+
+function viewFromHash() {
+    const name = location.hash.replace('#', '');
+    return VIEWS.includes(name) ? name : 'main';
+}
+
+function showView(el) {
+    el.classList.remove('no-anim');
+    el.classList.add('is-shown');
+    void el.offsetHeight; // reflow — чтобы сработала CSS-транзиция
+    el.classList.add('is-visible');
+}
+
+function switchView(toName, { instant = false } = {}) {
     if (toName === currentView) return;
 
-    const from = currentView ? getViewEl(currentView) : null;
-    const to   = getViewEl(toName);
+    clearTimeout(swapTimer); // быстрые клики не должны оставлять два вида одновременно
+
+    const to = getViewEl(toName);
     if (!to) return;
 
+    const from = currentView ? getViewEl(currentView) : null;
+
+    VIEWS.forEach((name) => {
+        const el = getViewEl(name);
+        if (el && el !== from && el !== to) el.classList.remove('is-shown', 'is-visible');
+    });
+
+    currentView = toName;
+
     if (instant || !from) {
-        ALL_VIEWS.forEach(v => {
-            const el = getViewEl(v);
-            if (el) el.classList.remove('is-shown', 'is-visible');
-        });
-        to.classList.add('is-shown');
-        void to.offsetHeight;
-        to.classList.add('is-visible');
-        currentView = toName;
+        if (from) from.classList.remove('is-shown', 'is-visible');
+        showView(to);
         return;
     }
 
     from.classList.remove('is-visible');
-
-    setTimeout(() => {
+    swapTimer = setTimeout(() => {
         from.classList.remove('is-shown');
-
-        to.classList.add('is-shown');
-        void to.offsetHeight;
-        to.classList.add('is-visible');
-
-        currentView = toName;
-    }, 400);
+        showView(to);
+        window.scrollTo({ top: 0 });
+    }, VIEW_SWAP_MS);
 }
+
+window.addEventListener('hashchange', () => switchView(viewFromHash()));
 
 /* ============================================================
-   FRONT MATTER PARSER
-   ============================================================ */
-function parseFrontMatter(raw) {
-    const match = raw.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?([\s\S]*)$/);
-    if (!match) return { meta: {}, body: raw.trim() };
-
-    const meta = {};
-    match[1].split(/\r?\n/).forEach(line => {
-        const idx = line.indexOf(':');
-        if (idx === -1) return;
-
-        const key = line.slice(0, idx).trim();
-        let value = line.slice(idx + 1).trim();
-
-        if ((value.startsWith('"') && value.endsWith('"')) ||
-            (value.startsWith("'") && value.endsWith("'"))) {
-            value = value.slice(1, -1);
-        }
-        meta[key] = value;
-    });
-
-    return { meta, body: match[2].trim() };
-}
-
-/* ============================================================
-   ЗАГРУЗКА ENTRIES
+   5. РЕНДЕРЫ
    ============================================================ */
 
-/**
- * Проверяем протокол — fetch() не работает на file://
- */
-function warnIfFileProtocol() {
-    if (location.protocol === 'file:') {
-        console.warn(
-            '%c[NLXV] ⚠ Страница открыта как file:// — fetch() будет блокирован CORS.\n' +
-            'Запусти локальный сервер:\n' +
-            '  python3 -m http.server 8000\n' +
-            'и открой http://localhost:8000',
-            'color:#ff6b6b;font-weight:bold;'
-        );
-        return true;
-    }
-    return false;
-}
+const labList         = $('labList');
+const projectsCatalog = $('projectsCatalog');
 
-async function loadEntries() {
-    // Ранний выход + понятное предупреждение
-    if (warnIfFileProtocol()) {
-        processEntries = [];
-        return;
-    }
-
-    try {
-        console.log(`[NLXV] Fetching manifest: ${CONFIG.manifestFile}`);
-        const res = await fetch(CONFIG.manifestFile, { cache: 'no-store' });
-
-        if (!res.ok) {
-            console.error(`[NLXV] Manifest HTTP ${res.status} — файл не найден или путь неверный: ${CONFIG.manifestFile}`);
-            processEntries = [];
-            return;
-        }
-
-        const data = await res.json();
-
-        // Поддержка двух форматов: ["a.md"] и { entries: ["a.md"] }
-        const files = Array.isArray(data) ? data : (data.entries || []);
-        console.log(`[NLXV] Manifest loaded. Entries listed:`, files);
-
-        if (!files.length) {
-            console.warn('[NLXV] manifest.json пустой — нет файлов для загрузки.');
-            processEntries = [];
-            return;
-        }
-
-        const loaded = await Promise.all(files.map(async (file) => {
-            const url = `${CONFIG.entriesPath}${file}`;
-            try {
-                const r = await fetch(url, { cache: 'no-store' });
-                if (!r.ok) {
-                    console.error(`[NLXV] Не удалось загрузить ${url} — HTTP ${r.status}`);
-                    return null;
-                }
-                const raw = await r.text();
-                const { meta } = parseFrontMatter(raw);
-                console.log(`[NLXV] Parsed ${file}:`, meta);
-                return { file, meta };
-            } catch (e) {
-                console.error(`[NLXV] Ошибка загрузки ${url}:`, e);
-                return null;
-            }
-        }));
-
-        processEntries = loaded
-            .filter(Boolean)
-            .sort((a, b) => b.file.localeCompare(a.file));
-
-        console.log(`[NLXV] Entries ready: ${processEntries.length}`);
-    } catch (err) {
-        console.error('[NLXV] Критическая ошибка загрузки manifest:', err);
-        processEntries = [];
-    }
-}
-
-async function openArticle(file) {
-    try {
-        const raw = await fetch(`${CONFIG.entriesPath}${file}`, { cache: 'no-store' })
-            .then(r => r.text());
-        const { meta, body } = parseFrontMatter(raw);
-        activeEntry = { file, meta, body };
-        renderArticle();
-        switchView('article');
-    } catch (err) {
-        console.error('[NLXV] Не удалось открыть статью:', err);
-    }
-}
-
-/* ============================================================
-   РЕНДЕРЫ
-   ============================================================ */
 function renderMainList() {
-    document.getElementById('heroTitle').innerHTML = staticHeroEnglish;
-    document.getElementById('stealthText').textContent = content[currentLang].stealth;
+    const t = I18N[currentLang];
 
-    labList.innerHTML = '';
+    labList.innerHTML = DIRECTIONS.map((item, i) => {
+        const isLink = Boolean(item.view);
+        const tag    = isLink ? 'a' : 'div';
+        const attrs  = isLink ? `href="#${item.view}"` : '';
+        const badge  = item.later ? `<span class="item-tag">${escapeHtml(t.later)}</span>` : '';
+        const arrow  = isLink ? `<span class="item-arrow">${ARROW_UP_RIGHT}</span>` : '';
 
-    content[currentLang].projects.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.className = 'list-item';
-
-        let handler = null;
-        if (index === 0) handler = () => switchView('projects');
-        if (index === 3) handler = () => switchView('process');
-
-        if (handler) {
-            row.setAttribute('role', 'button');
-            row.setAttribute('tabindex', '0');
-            row.addEventListener('click', handler);
-            row.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handler();
-                }
-            });
-        }
-
-        row.innerHTML = `
-            <div class="item-title">${item.title}</div>
-            <div class="item-desc">${item.desc}</div>
+        return `
+            <${tag} class="list-item${isLink ? ' is-link' : ''}" ${attrs} style="--i:${i}">
+                <div class="item-head">
+                    <span class="item-num">${pad2(i + 1)}</span>
+                    <span class="item-title">${escapeHtml(item.title)}</span>
+                    ${badge}
+                </div>
+                <div class="item-desc">${escapeHtml(item.desc[currentLang])}</div>
+                ${arrow}
+            </${tag}>
         `;
+    }).join('');
 
-        row.addEventListener('mouseenter', () => {
-            row.querySelector('.item-desc').style.color =
-                currentTheme === 'dark' ? '#ffffff' : '#1c1c1e';
-        });
-        row.addEventListener('mouseleave', () => {
-            row.querySelector('.item-desc').style.color = 'var(--text-muted)';
-        });
-
-        labList.appendChild(row);
-    });
+    $('eyebrowText').textContent = `${t.index} / ${pad2(DIRECTIONS.length)}`;
+    $('stealthText').textContent = t.stealth;
 }
 
 function renderCatalog() {
-    const data = content[currentLang];
+    const t = I18N[currentLang];
 
-    let cardsHtml = '';
-    subProjects.forEach(p => {
-        const isLink = p.url && p.url !== '#';
-        const tag = isLink ? 'a' : 'div';
-        const attrs = isLink
-            ? `href="${p.url}" target="_blank" rel="noopener noreferrer"`
-            : '';
-
-        cardsHtml += `
-            <${tag} class="project-card" ${attrs}>
-                <div class="project-num">${p.num}</div>
-                <div class="project-info">
-                    <div class="project-name">${p.title}</div>
-                    <div class="project-stack">${p.tech}</div>
-                </div>
-                <div class="project-link">
-                    <span>${data.visit}</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M7 17L17 7M17 7H8M17 7V16"/>
-                    </svg>
-                </div>
-            </${tag}>
-        `;
-    });
+    const cards = PROJECTS.map((p, i) => `
+        <a class="project-card js-roll" style="--i:${i}"
+           href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer"
+           aria-label="${escapeHtml(t.visit)}: ${escapeHtml(p.title)}">
+            <div class="project-num">${pad2(i + 1)}</div>
+            <div class="project-info">
+                <div class="project-name">${escapeHtml(p.title)}</div>
+                <div class="project-stack">${escapeHtml(p.stack.join(' · '))}</div>
+            </div>
+            <div class="project-link">
+                <span class="project-link-label">${roll(t.visit)}</span>
+                ${ARROW_UP_RIGHT}
+            </div>
+        </a>
+    `).join('');
 
     projectsCatalog.innerHTML = `
         <div class="catalog-header">
-            <button class="back-btn" id="projectsBackBtn" type="button">
-                <svg class="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                <span>${data.back}</span>
-            </button>
-            <div class="catalog-counter">${data.catalogTitle} / ${String(subProjects.length).padStart(2, '0')}</div>
+            <a class="back-btn js-roll" href="#">
+                ${ARROW_LEFT}
+                <span>${roll(t.back)}</span>
+            </a>
+            <div class="catalog-counter">${escapeHtml(t.catalogTitle)} / ${pad2(PROJECTS.length)}</div>
         </div>
-        <div class="catalog-list">${cardsHtml}</div>
+        <div class="catalog-list">${cards}</div>
     `;
-
-    document.getElementById('projectsBackBtn')
-        .addEventListener('click', () => switchView('main'));
 }
 
-function renderProcessList() {
-    const data = content[currentLang];
+/** Бегущая строка со стеком — собирается из стеков всех проектов, без дублей. */
+function renderMarquee() {
+    const unique = [...new Set(PROJECTS.flatMap((p) => p.stack))];
+    const items = unique.map((s) => `<li>${escapeHtml(s)}</li>`).join('');
+    // Внутри группы список повторён дважды — чтобы лента не «обрывалась» на широких экранах.
+    const group = `<ul class="marquee-group">${items}${items}</ul>`;
+    $('stackMarquee').innerHTML = `<div class="marquee-track">${group}${group}</div>`;
+}
 
-    if (processCounter) {
-        processCounter.textContent =
-            `${data.devlogTitle} / ${String(processEntries.length).padStart(2, '0')}`;
+function renderContent({ animate = true } = {}) {
+    if (!animate) {
+        VIEWS.forEach((name) => getViewEl(name)?.classList.add('no-anim'));
     }
-
-    const backLabel = processWrap.querySelector('.back-label');
-    if (backLabel) backLabel.textContent = data.back;
-
-    processList.innerHTML = '';
-
-    // ⬇⬇⬇ ЗДЕСЬ УБРАНО сообщение "No entries yet" — если пусто, просто ничего не рисуем
-    if (!processEntries.length) return;
-
-    processEntries.forEach((entry, idx) => {
-        const title   = entry.meta[`title_${currentLang}`]   || entry.meta.title_en   || 'Untitled';
-        const summary = entry.meta[`summary_${currentLang}`] || entry.meta.summary_en || '';
-        const date    = entry.meta.date || '';
-        const num     = String(idx + 1).padStart(2, '0');
-
-        const row = document.createElement('a');
-        row.href = '#';
-        row.className = 'project-card';
-        row.dataset.entryFile = entry.file;
-        row.innerHTML = `
-            <div class="project-num">${num}</div>
-            <div class="project-info">
-                ${date ? `<div class="project-date">${date}</div>` : ''}
-                <div class="project-name">${title}</div>
-                ${summary ? `<div class="project-stack">${summary}</div>` : ''}
-            </div>
-            <div class="project-link">
-                <span>${data.read}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M7 17L17 7M17 7H8M17 7V16"/>
-                </svg>
-            </div>
-        `;
-
-        row.addEventListener('click', (e) => {
-            e.preventDefault();
-            openArticle(entry.file);
-        });
-
-        processList.appendChild(row);
-    });
-}
-
-function renderArticle() {
-    if (!activeEntry) return;
-
-    const { meta, body } = activeEntry;
-    const title = meta[`title_${currentLang}`] || meta.title_en || 'Untitled';
-    const date  = meta.date || '';
-
-    const backLabel = articleWrap.querySelector('.back-label');
-    if (backLabel) backLabel.textContent = content[currentLang].back;
-
-    articleHero.innerHTML = `
-        ${date ? `<div class="article-date">${date}</div>` : ''}
-        <h1 class="article-title">${title}</h1>
-    `;
-
-    const html = (typeof marked !== 'undefined')
-        ? marked.parse(body, { gfm: true, breaks: false })
-        : `<pre>${body.replace(/</g, '&lt;')}</pre>`;
-
-    articleContent.innerHTML = html;
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function renderContent() {
     renderMainList();
     renderCatalog();
-    renderProcessList();
-    if (activeEntry && currentView === 'article') renderArticle();
 }
 
 /* ============================================================
-   UI-ОБРАБОТЧИКИ
+   6. ИНИЦИАЛИЗАЦИЯ
    ============================================================ */
-langToggle.addEventListener('click', () => {
-    currentLang = currentLang === 'en' ? 'ru' : 'en';
-    langToggle.textContent = currentLang.toUpperCase();
-    document.documentElement.lang = currentLang;
+function init() {
+    applyTheme(getTheme());
+    renderLangButton();
     renderContent();
-});
-
-themeToggle.addEventListener('click', () => {
-    if (currentTheme === 'dark') {
-        bodyElem.classList.remove('dark');
-        bodyElem.classList.add('light');
-        currentTheme = 'light';
-        themeIconMoon.style.display = 'block';
-        themeIconSun.style.display  = 'none';
-    } else {
-        bodyElem.classList.remove('light');
-        bodyElem.classList.add('dark');
-        currentTheme = 'dark';
-        themeIconMoon.style.display = 'none';
-        themeIconSun.style.display  = 'block';
-    }
-    renderContent();
-});
-
-document.getElementById('processBackBtn').addEventListener('click', () => {
-    switchView('main');
-});
-
-document.getElementById('articleBackBtn').addEventListener('click', () => {
-    switchView('process');
-});
-
-/* ============================================================
-   ИНИЦИАЛИЗАЦИЯ
-   ============================================================ */
-async function init() {
-    renderMainList();
-    renderCatalog();
-    switchView('main', true);
-
-    await loadEntries();
-    renderProcessList();
+    renderMarquee();
+    switchView(viewFromHash(), { instant: true });
 }
 
 init();
