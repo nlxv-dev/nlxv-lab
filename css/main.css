@@ -1,544 +1,252 @@
-/* ============================================================
-   NLXV — MAIN STYLES
-   Дизайн-система, темы, анимации, сброс мобильной подсветки.
-   ============================================================ */
-
-/* ---------- ТЕМИЗАЦИЯ ---------- */
-.dark {
-    --bg-main: #070708;
-    --text-primary: #ffffff;
-    --text-muted: #86868b;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --stealth-color: #161617;
-    --stealth-hover: rgba(255, 255, 255, 0.2);
-    --hover-bg: rgba(255, 255, 255, 0.01);
+:root {
+    --bg-color: #0d0e10;
+    --card-bg: #141619;
+    --border-color: #26292e;
+    --text-primary: #e6e8ec;
+    --text-muted: #737a85;
+    --accent-color: #00ff66;
+    --accent-dim: rgba(0, 255, 102, 0.15);
+    --font-mono: 'JetBrains Mono', monospace;
 }
 
-.light {
-    --bg-main: #fcfbfa;
-    --text-primary: #1c1c1e;
-    --text-muted: #68686e;
-    --border-color: rgba(0, 0, 0, 0.08);
-    --stealth-color: #e5e5ea;
-    --stealth-hover: rgba(0, 0, 0, 0.4);
-    --hover-bg: rgba(0, 0, 0, 0.015);
-}
-
-/* ---------- ГЛОБАЛЬНЫЙ СБРОС ---------- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    /* Полностью убирает серо-синюю подсветку при тапе на смартфонах */
-    -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
-    -webkit-text-size-adjust: 100%;
-}
-
-/* ---------- КАРКАС СТРАНИЦЫ (STICKY FOOTER) ----------
-   Контент всегда сверху. Футер прижат к низу только если места
-   больше, чем контента. Никаких "провалов" при малом количестве
-   элементов в списке.
-   ------------------------------------------------------------ */
 body {
-    background-color: var(--bg-main);
+    background-color: var(--bg-color);
     color: var(--text-primary);
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    letter-spacing: -0.01em;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+}
+
+.site-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    overflow-x: hidden;
-    transition: background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.font-serif-italic {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-}
-
-.container {
-    width: 100%;
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 max(2rem, 6vw);
-}
-
-/* ---------- ШАПКА ---------- */
+/* Header */
 .header {
-    width: 100%;
-    padding: 2.5rem 0;
-}
-
-.header-wrap {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 30px;
 }
 
 .logo {
-    font-size: 1.1rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
-.controls {
-    display: flex;
-    align-items: center;
-    gap: 1.8rem;
+.accent {
+    color: var(--accent-color);
 }
 
-.lang-btn {
-    background: none;
-    border: none;
-    color: inherit;
-    font-family: inherit;
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    opacity: 0.5;
-    cursor: pointer;
-    transition: opacity 0.3s ease;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.lang-btn:hover { opacity: 1; }
-
-.theme-btn {
-    background: none;
-    border: none;
-    color: inherit;
-    opacity: 0.5;
-    cursor: pointer;
-    transition: opacity 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    padding: 0;
-    margin: 0;
-    outline: none;
-    line-height: 0;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.theme-btn:hover { opacity: 1; }
-
-.theme-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    display: block;
-    margin: 0 auto;
-    flex-shrink: 0;
-}
-
-/* ---------- ОСНОВНОЙ КОНТЕНТ ----------
-   flex-grow: 1 заставляет main занимать всё свободное место
-   между шапкой и футером, но при этом САМ КОНТЕНТ внутри
-   остаётся сверху — без justify-content: space-between.
-   ------------------------------------------------------------ */
-.main-content {
-    width: 100%;
-    flex-grow: 1;
-    padding-top: max(5rem, 8vh);
-    padding-bottom: max(3rem, 5vh);
-}
-
-.hero-section { margin-bottom: 5rem; }
-
-.hero-title {
-    font-size: clamp(2.2rem, 5.5vw, 5rem);
-    font-weight: 300;
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    max-width: 90%;
-}
-
-/* ---------- МЕНЕДЖЕР ВИДОВ (SPA-переходы) ---------- */
-.list-section {
-    position: relative;
-    border-top: 1px solid var(--border-color);
-}
-
-.view {
-    display: none;
-    opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.view.is-shown { display: block; }
-
-.view.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* ---------- ГЛАВНЫЙ СПИСОК ---------- */
-/* display: flex задаём только когда блок показан (.is-shown),
-   иначе он перебивает display: none у .view и занимает место
-   невидимым — из-за этого остальной контент "съезжал" вниз. */
-.list-wrap.is-shown {
-    display: flex;
-    flex-direction: column;
-}
-
-.list-item {
-    display: flex;
-    flex-direction: column;
-    padding: 2.4rem 0;
-    border-bottom: 1px solid var(--border-color);
-    text-decoration: none;
-    color: inherit;
-    transition: padding-left 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
-
-@media (min-width: 768px) {
-    .list-item {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-}
-
-.list-item:hover {
-    padding-left: 1.5rem;
-    background-color: var(--hover-bg);
-}
-
-.item-title {
-    font-size: 1.3rem;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.list-item:hover .item-title { transform: translateX(4px); }
-
-.item-desc {
-    font-size: 0.98rem;
+.tagline {
     color: var(--text-muted);
-    max-width: 580px;
-    line-height: 1.55;
-    margin-top: 0.5rem;
-    transition: color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    font-size: 12px;
+    margin-top: 4px;
 }
 
-@media (min-width: 768px) {
-    .item-desc { margin-top: 0; text-align: right; }
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
 }
 
-/* ---------- ОБЩАЯ ШАПКА ДЛЯ КАТАЛОГОВ ---------- */
-.catalog-header {
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent-color);
+}
+
+/* Grid Layout */
+.grid-container {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 40px;
+    flex-grow: 1;
+}
+
+/* Sidebar & Sections */
+.nav-section {
+    margin-bottom: 32px;
+}
+
+.section-num {
+    color: var(--accent-color);
+    font-size: 11px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.section-title {
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.section-desc {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.process-placeholder {
+    opacity: 0.4;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* Logs Index List */
+.log-index {
+    list-style: none;
+}
+
+.log-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 2rem 0;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.back-btn {
-    background: none;
-    border: none;
-    color: inherit;
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.5;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 4px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0;
-    transition: opacity 0.3s ease;
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
 }
 
-.back-btn:hover { opacity: 1; }
-
-.back-arrow {
-    width: 1rem;
-    height: 1rem;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.log-item:hover {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
 }
 
-.back-btn:hover .back-arrow { transform: translateX(-4px); }
+.log-item.active {
+    background-color: var(--accent-dim);
+    border-color: var(--accent-color);
+    color: #fff;
+}
 
-.catalog-counter {
-    font-size: 0.8rem;
+.log-title {
+    font-weight: 500;
+}
+
+.log-date {
     color: var(--text-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 11px;
 }
 
-.catalog-list {
-    display: flex;
-    flex-direction: column;
-}
-
-/* ---------- КАРТОЧКА ПРОЕКТА / ЗАПИСИ ДЕВЛОГА ---------- */
-.project-card {
-    display: grid;
-    grid-template-columns: 3rem 1fr auto;
-    gap: 2rem;
-    align-items: center;
-    padding: 2.4rem 0;
-    border-bottom: 1px solid var(--border-color);
-    text-decoration: none;
-    color: inherit;
-    transition: padding-left 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    -webkit-tap-highlight-color: transparent;
-}
-
-a.project-card { cursor: pointer; }
-
-.project-card:hover {
-    padding-left: 1.5rem;
-    background-color: var(--hover-bg);
-}
-
-.project-num {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-style: italic;
-    font-size: 1.1rem;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-}
-
-.project-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    min-width: 0;
-}
-
-.project-date {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    opacity: 0.75;
-}
-
-.project-name {
-    font-size: 1.3rem;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.project-card:hover .project-name { transform: translateX(4px); }
-
-.project-stack {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    line-height: 1.55;
-    max-width: 640px;
-}
-
-.project-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    white-space: nowrap;
-    transition: color 0.3s ease;
-}
-
-.project-card:hover .project-link { color: var(--text-primary); }
-
-.project-link svg {
-    width: 0.85rem;
-    height: 0.85rem;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.project-card:hover .project-link svg { transform: translate(3px, -3px); }
-
-@media (max-width: 767px) {
-    .project-card {
-        grid-template-columns: 1fr;
-        gap: 0.9rem;
-        padding: 2rem 0;
-    }
-    .project-num { font-size: 0.85rem; }
-    .project-link { justify-self: start; }
-}
-
-/* ---------- СТАТЬЯ ДЕВЛОГА (книжная вёрстка) ---------- */
-.article-wrap { padding-bottom: 2rem; }
-
-.article-hero {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 3rem 0 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.article-date {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    opacity: 0.8;
-}
-
-.article-title {
-    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-    font-weight: 300;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
-}
-
-.article-content {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 2.5rem 0 5rem;
-    font-size: 1.05rem;
-    line-height: 1.8;
-    letter-spacing: -0.005em;
-    color: var(--text-primary);
-}
-
-.article-content > *:first-child { margin-top: 0; }
-
-.article-content h1,
-.article-content h2,
-.article-content h3,
-.article-content h4 {
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-    margin: 2.5em 0 0.8em;
-}
-
-.article-content h1 { font-size: 2rem; }
-.article-content h2 { font-size: 1.55rem; }
-.article-content h3 { font-size: 1.25rem; }
-.article-content h4 { font-size: 1.1rem; }
-
-.article-content p { margin: 0 0 1.4em; }
-
-.article-content strong,
-.article-content b { font-weight: 500; }
-
-.article-content em,
-.article-content i { font-style: italic; }
-
-.article-content img,
-.article-content video,
-.article-content iframe {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 2rem auto;
-    border-radius: 2px;
-}
-
-.article-content a {
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
-    opacity: 0.85;
-    transition: opacity 0.2s ease;
-}
-
-.article-content a:hover { opacity: 1; }
-
-.article-content ul,
-.article-content ol {
-    padding-left: 1.5em;
-    margin: 0 0 1.4em;
-}
-
-.article-content li { margin: 0.4em 0; }
-
-.article-content blockquote {
-    border-left: 2px solid var(--border-color);
-    padding-left: 1.5em;
-    margin: 1.5em 0;
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-.article-content code {
-    font-family: 'SF Mono', Menlo, Consolas, monospace;
-    font-size: 0.88em;
-    background: var(--hover-bg);
-    padding: 0.15em 0.4em;
-    border-radius: 2px;
-}
-
-.article-content pre {
-    background: var(--hover-bg);
+/* Works Section */
+.work-item {
+    padding: 10px;
     border: 1px solid var(--border-color);
-    padding: 1.2em 1.4em;
-    overflow-x: auto;
-    margin: 1.5em 0;
-    font-size: 0.88em;
-    line-height: 1.65;
-    border-radius: 2px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background-color: var(--card-bg);
 }
 
-.article-content pre code {
-    background: none;
-    padding: 0;
-    font-size: 1em;
+.work-title {
+    display: block;
+    font-weight: 500;
 }
 
-.article-content hr {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 3em 0;
+.work-desc {
+    display: block;
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-bottom: 6px;
 }
 
-/* ---------- ФУТЕР ---------- */
-.footer {
-    padding: 3rem 0;
-    /* Не растягивается — идёт сразу после main-content.
-       Если контента мало, main-content занимает всё свободное
-       место благодаря flex-grow: 1 и прижимает футер к низу. */
-}
-
-.stealth-wrap {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.stealth-link {
-    font-size: 0.7rem;
-    color: var(--stealth-color);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
+.work-link {
+    color: var(--accent-color);
     text-decoration: none;
-    text-align: center;
-    transition: color 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    -webkit-tap-highlight-color: transparent;
+    font-size: 11px;
+    font-weight: 700;
 }
 
-.stealth-link:hover { color: var(--stealth-hover); }
+.work-link:hover {
+    text-decoration: underline;
+}
+
+/* Content Viewer */
+.content-viewer {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.viewer-header {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.markdown-body {
+    line-height: 1.7;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+    color: var(--text-primary);
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+.markdown-body p {
+    margin-bottom: 16px;
+    color: #c3c7d1;
+}
+
+.markdown-body code {
+    background: var(--bg-color);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    color: var(--accent-color);
+}
+
+.placeholder-text {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Footer */
+.footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+}
