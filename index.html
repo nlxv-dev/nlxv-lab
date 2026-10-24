@@ -3,101 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NLXV — Independent Digital Laboratory</title>
-
-    <!-- Премиальные шрифты -->
+    <title>NLXV — Digital Engineering Lab</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-    <!-- Основные стили -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="css/main.css">
-
-    <!-- Лёгкий парсер Markdown (Marked.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+    
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="dark" id="bodyRoot">
-
-    <!-- ===================== ШАПКА ===================== -->
-    <header class="header">
-        <div class="container header-wrap">
-            <div class="logo">NLXV</div>
-            <div class="controls">
-                <button id="langToggle" class="lang-btn" type="button">EN</button>
-                <button id="themeToggle" class="theme-btn" type="button" aria-label="Toggle theme">
-                    <!-- Луна (для светлой темы) -->
-                    <svg id="themeIconMoon" class="theme-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                    <!-- Солнце (для тёмной темы) -->
-                    <svg id="themeIconSun" class="theme-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: block;">
-                        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.5"></circle>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M19.78 4.22l-1.42 1.42"></path>
-                    </svg>
-                </button>
+<body>
+    <div class="site-wrapper">
+        <!-- Header / Identity -->
+        <header class="header">
+            <div class="brand">
+                <h1 class="logo">NLXV <span class="accent">/ LAB</span></h1>
+                <p class="tagline">minimalist digital engineering & experimental interface unit.</p>
             </div>
-        </div>
-    </header>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span class="status-text">SYSTEMS NOMINAL</span>
+            </div>
+        </header>
 
-    <!-- ===================== ОСНОВНОЙ КОНТЕНТ ===================== -->
-    <div class="main-content">
-        <div class="container">
-
-            <!-- Hero (заголовок всегда английский) -->
-            <section class="hero-section">
-                <h1 id="heroTitle" class="hero-title">NLXV — <span class="font-serif-italic">Independent</span> Digital Laboratory.</h1>
-            </section>
-
-            <!-- Контейнер с четырьмя "видами" (views), между которыми переключается SPA -->
-            <section id="listSection" class="list-section">
-
-                <!-- VIEW: MAIN (главный список направлений) -->
-                <div class="view list-wrap" data-view="main" id="labList"></div>
-
-                <!-- VIEW: PROJECTS (каталог боевых пет-проектов) -->
-                <div class="view catalog-wrap" data-view="projects" id="projectsCatalog"></div>
-
-                <!-- VIEW: PROCESS (лента девлогов) -->
-                <div class="view process-wrap" data-view="process" id="processWrap">
-                    <div class="catalog-header">
-                        <button class="back-btn" id="processBackBtn" type="button">
-                            <svg class="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M19 12H5M12 19l-7-7 7-7"/>
-                            </svg>
-                            <span class="back-label">Back</span>
-                        </button>
-                        <div class="catalog-counter" id="processCounter">Dev Log / 00</div>
+        <!-- Main Grid Layout -->
+        <main class="grid-container">
+            <!-- Left Column: Navigation / Index -->
+            <aside class="sidebar">
+                <nav class="nav-menu">
+                    <div class="nav-section">
+                        <span class="section-num">01</span>
+                        <h2 class="section-title">LOGS / DISPATCHES</h2>
+                        <ul class="log-index" id="logIndexList">
+                            <!-- Dynamically populated from entries/manifest.json -->
+                            <li class="loading-state">fetching index manifest...</li>
+                        </ul>
                     </div>
-                    <div class="catalog-list" id="processList"></div>
-                </div>
 
-                <!-- VIEW: ARTICLE (полноценная статья девлога) -->
-                <div class="view article-wrap" data-view="article" id="articleWrap">
-                    <div class="catalog-header">
-                        <button class="back-btn" id="articleBackBtn" type="button">
-                            <svg class="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M19 12H5M12 19l-7-7 7-7"/>
-                            </svg>
-                            <span class="back-label">Back</span>
-                        </button>
-                        <div class="catalog-counter">Dev Log</div>
+                    <div class="nav-section">
+                        <span class="section-num">02</span>
+                        <h2 class="section-title">SELECTED WORKS</h2>
+                        <div class="works-list">
+                            <div class="work-item">
+                                <span class="work-title">Neo Finance</span>
+                                <span class="work-desc">Fintech dashboard architecture</span>
+                                <a href="https://github.io" target="_blank" rel="noopener noreferrer" class="work-link">VISIT ↗</a>
+                            </div>
+                            <div class="work-item">
+                                <span class="work-title">EcoPrint Norway</span>
+                                <span class="work-desc">Industrial carbon tracking UI</span>
+                                <a href="https://github.io" target="_blank" rel="noopener noreferrer" class="work-link">VISIT ↗</a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="article-hero" id="articleHero"></div>
-                    <article class="article-content" id="articleContent"></article>
-                </div>
 
+                    <div class="nav-section">
+                        <span class="section-num">03</span>
+                        <h2 class="section-title">NLXV / PROCESS</h2>
+                        <p class="section-desc process-placeholder">later</p>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Right Column: Content Viewer -->
+            <section class="content-viewer">
+                <div class="viewer-header">
+                    <span id="currentLogId" class="log-id-badge">SELECT_ENTRY</span>
+                    <span id="currentLogDate" class="log-date-badge">--/--/----</span>
+                </div>
+                
+                <article id="markdownViewer" class="markdown-body">
+                    <p class="placeholder-text">Select a dispatch log from the sidebar index to render content...</p>
+                </article>
             </section>
-        </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-col">
+                <span>COORD: 59.9139° N, 10.7522° E</span>
+            </div>
+            <div class="footer-col align-right">
+                <span>&copy; NLXV LAB. ALL RIGHTS RESERVED.</span>
+            </div>
+        </footer>
     </div>
 
-    <!-- ===================== ФУТЕР ===================== -->
-    <footer class="footer">
-        <div class="container stealth-wrap">
-            <a href="#" id="stealthText" class="stealth-link">NLXV / Research — [Stealth Mode] / Internal ecosystem & closed R&D prototypes.</a>
-        </div>
-    </footer>
-
-    <!-- Основная логика -->
-    <script src="js/app.js" defer></script>
+    <!-- Application Script -->
+    <script src="js/app.js"></script>
 </body>
 </html>
